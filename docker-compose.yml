@@ -1,0 +1,47 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:16
+    container_name: foodgram_db
+    environment:
+      POSTGRES_DB: foodgram
+      POSTGRES_USER: foodgram
+      POSTGRES_PASSWORD: foodgram
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U foodgram -d foodgram"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  backend:
+    build: .
+    container_name: foodgram_backend
+    environment:
+      DATABASE_URL: postgresql://foodgram:foodgram@db:5432/foodgram
+      JWT_SECRET: super-secret-key
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./app:/app/app
+      - ./media:/app/media
+
+  adminer:
+    image: adminer:4
+    container_name: foodgram_adminer
+    depends_on:
+      - db
+    environment:
+      ADMINER_DEFAULT_SERVER: db
+    ports:
+      - "8080:8080"
+
+volumes:
+  db_data:
