@@ -19,4 +19,5 @@ pip install -r requirements.txt
 uvicorn app.main:app --reload
 ```
 Не забудьте поднять Postgres и выставить `DATABASE_URL`.
-# foodgram2
+
+*Выполнил:* Беляев Вадим
