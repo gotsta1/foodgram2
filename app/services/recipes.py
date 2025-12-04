@@ -7,6 +7,9 @@ from app.repositories import recipe_ingredients as ri_repo
 from app.repositories import recipe_tags as rt_repo
 from app.repositories import recipes as recipes_repo
 from app.repositories import tags as tags_repo
+from app.repositories import favorites as favorites_repo
+from app.repositories import comments as comments_repo
+from app.repositories import ratings as ratings_repo
 from app.repositories.utils import row_affected
 from app.services.files import process_image_input
 
@@ -34,6 +37,21 @@ async def get_recipe_or_404(connection, recipe_id: int) -> dict:
     await recipes_repo.increment_views(connection, recipe_id)
     recipe["views"] = (recipe.get("views") or 0) + 1
     return await _attach_details(connection, recipe)
+
+
+async def get_recipe_stats(connection, recipe_id: int) -> dict:
+    recipe = await recipes_repo.get_by_id(connection, recipe_id)
+    if not recipe:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Recipe not found")
+    likes = await favorites_repo.count_for_recipe(connection, recipe_id)
+    comments = await comments_repo.count_for_recipe(connection, recipe_id)
+    avg_rate = await ratings_repo.get_avg_rate(connection, recipe_id)
+    return {
+        "likes": likes,
+        "views": recipe.get("views", 0),
+        "comments": comments,
+        "avg_rate": round(avg_rate, 2),
+    }
 
 
 async def create_recipe(

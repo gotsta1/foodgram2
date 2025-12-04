@@ -5,8 +5,8 @@ from typing import List
 from fastapi import APIRouter, Depends
 
 from app.db import get_connection
-from app.schemas import Ingredient
-from app.services.ingredients import list_ingredients
+from app.schemas import Ingredient, IngredientStatsResponse
+from app.services.ingredients import get_ingredient_stats, list_ingredients
 
 router = APIRouter(prefix="/ingredients")
 
@@ -20,3 +20,11 @@ async def get_ingredients(
     connection=Depends(get_connection),
 ):
     return await list_ingredients(connection, q=q, limit=limit, offset=offset, sort=sort)
+
+
+@router.get("/{ingredient_id}/statistics", response_model=IngredientStatsResponse)
+async def get_ingredient_statistics(
+    ingredient_id: int,
+    connection=Depends(get_connection),
+):
+    return await get_ingredient_stats(connection, ingredient_id)

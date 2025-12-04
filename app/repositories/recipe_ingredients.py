@@ -56,3 +56,11 @@ async def delete_item(conn: asyncpg.Connection, item_id: int) -> str:
 
 async def delete_all_for_recipe(conn: asyncpg.Connection, recipe_id: int) -> str:
     return await conn.execute("DELETE FROM recipe_ingredients WHERE recipe_id = $1", recipe_id)
+
+
+async def count_recipes_for_ingredient(conn: asyncpg.Connection, ingredient_id: int) -> int:
+    val = await conn.fetchval(
+        "SELECT COUNT(DISTINCT recipe_id) FROM recipe_ingredients WHERE ingredient_id = $1",
+        ingredient_id,
+    )
+    return int(val or 0)

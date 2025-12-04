@@ -48,6 +48,24 @@ async def get_user_favorite(conn: asyncpg.Connection, user_id: int, recipe_id: i
     return dict(record) if record else None
 
 
+async def count_for_recipe(conn: asyncpg.Connection, recipe_id: int) -> int:
+    val = await conn.fetchval("SELECT COUNT(*) FROM favorites WHERE recipe_id = $1", recipe_id)
+    return int(val or 0)
+
+
+async def count_for_author(conn: asyncpg.Connection, author_id: int) -> int:
+    val = await conn.fetchval(
+        """
+        SELECT COUNT(*)
+        FROM favorites f
+        JOIN recipes r ON r.id = f.recipe_id
+        WHERE r.author_id = $1
+        """,
+        author_id,
+    )
+    return int(val or 0)
+
+
 async def delete_favorite(conn: asyncpg.Connection, user_id: int, recipe_id: int) -> str:
     return await conn.execute(
         "DELETE FROM favorites WHERE recipe_id = $1 AND user_id = $2",

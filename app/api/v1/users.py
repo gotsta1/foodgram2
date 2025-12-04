@@ -6,10 +6,11 @@ from fastapi import APIRouter, Depends
 
 from app.db import get_connection
 from app.dependencies.auth import get_current_user
-from app.schemas import Recipe, Subscription, User, UserRecipesResponse, UserUpdate
+from app.schemas import Recipe, Subscription, User, UserRecipesResponse, UserStatsResponse, UserUpdate
 from app.services.recipes import list_user_recipes
+from app.services.users import get_current_user_profile, get_user_or_404, get_user_stats, list_users, update_current_user
 from app.services.subscriptions import upsert_item as subscribe_user
-from app.services.users import get_current_user_profile, get_user_or_404, list_users, update_current_user
+from app.services.users import get_current_user_profile, get_user_or_404, get_user_stats, list_users, update_current_user
 
 router = APIRouter(prefix="/users")
 
@@ -63,3 +64,11 @@ async def subscribe_user_endpoint(
     current_user=Depends(get_current_user),
 ):
     return await subscribe_user(connection, user_id=current_user["id"], following_id=user_id)
+
+
+@router.get("/{user_id}/statistics", response_model=UserStatsResponse)
+async def get_user_statistics(
+    user_id: int,
+    connection=Depends(get_connection),
+):
+    return await get_user_stats(connection, user_id)

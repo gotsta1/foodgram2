@@ -16,13 +16,14 @@ from app.schemas import (
     Recipe,
     RecipeCreate,
     RecipeUpdate,
+    RecipeStatsResponse,
 )
 from app.services.comments import create_comment, delete_comment, list_comments, update_comment
 from app.services.favorites import add_favorite, delete_favorite
 from app.services.ratings import create_rating, get_avg_rate, list_ratings
 from app.services.shopping_list import add_item as add_to_shopping_list
 from app.services.shopping_list import delete_item as delete_from_shopping_list
-from app.services.recipes import create_recipe, delete_recipe, get_recipe_or_404, list_recipes, update_recipe
+from app.services.recipes import create_recipe, delete_recipe, get_recipe_or_404, get_recipe_stats, list_recipes, update_recipe
 from app.services.files import process_image_input
 
 router = APIRouter(prefix="/recipes")
@@ -209,6 +210,14 @@ async def get_recipe_ratings(
     ratings = await list_ratings(connection, recipe_id, limit=limit, offset=offset)
     avg_rate = await get_avg_rate(connection, recipe_id)
     return RatingsResponse(avg_rate=round(avg_rate, 2), ratings=ratings)
+
+
+@router.get("/{recipe_id}/statistics", response_model=RecipeStatsResponse)
+async def get_recipe_statistics(
+    recipe_id: int,
+    connection=Depends(get_connection),
+):
+    return await get_recipe_stats(connection, recipe_id)
 
 
 @router.post("/{recipe_id}/ratings", response_model=Rating, status_code=status.HTTP_201_CREATED)

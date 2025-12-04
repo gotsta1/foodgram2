@@ -3,6 +3,9 @@ from __future__ import annotations
 from fastapi import HTTPException, status
 
 from app.repositories import users as users_repo
+from app.repositories import favorites as favorites_repo
+from app.repositories import comments as comments_repo
+from app.repositories import subscriptions as subscriptions_repo
 from app.schemas import UserUpdate
 from app.services.files import process_image_input
 
@@ -62,3 +65,17 @@ async def update_current_user(connection, user_id: int, payload: UserUpdate) -> 
         avatar=avatar_value,
     )
     return _sanitize(updated)
+
+
+async def get_user_stats(connection, user_id: int) -> dict:
+    user = await users_repo.get_by_id(connection, user_id)
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+    likes = await favorites_repo.count_for_author(connection, user_id)
+    subscribers = await subscriptions_repo.count_followers(connection, user_id)
+    comments = await comments_repo.count_for_author_recipes(connection, user_id)
+    return {
+        "likes": likes,
+        "subscribers": subscribers,
+        "comments": comments,
+    }

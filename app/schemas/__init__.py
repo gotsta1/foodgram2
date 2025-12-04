@@ -22,4 +22,5 @@ from .subscriptions_response import FollowersResponse, SubscriptionsResponse
 from .tags import Tag, TagBase, TagCreate, TagUpdate
 from .users import User, UserBase, UserCreate, UserUpdate
 from .user_recipes import UserRecipesResponse
+from .stats import IngredientStatsResponse, RecipeStatsResponse, UserStatsResponse
 from .favorites_list import FavoritesListResponse

@@ -34,6 +34,24 @@ async def list_comments(
     return [dict(r) for r in records]
 
 
+async def count_for_recipe(conn: asyncpg.Connection, recipe_id: int) -> int:
+    val = await conn.fetchval("SELECT COUNT(*) FROM comments WHERE recipe_id = $1", recipe_id)
+    return int(val or 0)
+
+
+async def count_for_author_recipes(conn: asyncpg.Connection, author_id: int) -> int:
+    val = await conn.fetchval(
+        """
+        SELECT COUNT(*)
+        FROM comments c
+        JOIN recipes r ON r.id = c.recipe_id
+        WHERE r.author_id = $1
+        """,
+        author_id,
+    )
+    return int(val or 0)
+
+
 async def create_comment(
     conn: asyncpg.Connection,
     *,

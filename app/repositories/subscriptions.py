@@ -75,3 +75,8 @@ async def get_subscription(conn: asyncpg.Connection, user_id: int, following_id:
         following_id,
     )
     return dict(record) if record else None
+
+
+async def count_followers(conn: asyncpg.Connection, user_id: int) -> int:
+    val = await conn.fetchval("SELECT COUNT(*) FROM subscriptions WHERE following_id = $1", user_id)
+    return int(val or 0)
